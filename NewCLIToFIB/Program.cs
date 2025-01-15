@@ -1,51 +1,94 @@
 ﻿
 using System.CommandLine;
 
-var optionCommand = new Option<FileInfo>("--output","the path output");
+var outputOption = new Option<FileInfo>("--output","the path output");
 
-var languageOption = new Option<List<string>>("--language", "the language the code or all");
+var languageOption = new Option<string>("--language", "the language the code or all");
 
-var noteOptions = new Option<FileAttributes>("--note", "The source code is in the comment in the file");
+var noteOptions = new Option<bool>("--note", "The source code is in the comment in the file");
 
-var sortOption = new Option<SortedList<Stream>("--sort","Order of copying the code files");
+var sortOption = new Option<string>("--sort","Order of copying the code files");
 
-var removeEmptyLinesOption = new Option<List<StreamReader>>("--remove-empty-lines", "Delete empty rows");
+var removeEmptyLinesOption = new Option<bool>("--remove-empty-lines", "Delete empty rows");
 
-var authorOption = new Option<FileInfo>("--author", "Register the name of the file creator");
+var authorOption = new Option<string>("--author", "Register the name of the file creator");
 
 var bundle = new Command("bundle", "bundle code to opposite the single page");
 
-bundle.AddOption(optionCommand);
 bundle.AddOption(languageOption);
+bundle.AddOption(outputOption);
 bundle.AddOption(noteOptions);
 bundle.AddOption(sortOption);
 bundle.AddOption(removeEmptyLinesOption);
+bundle.AddOption(authorOption);
 
-bundle.SetHandler((output) =>
+Console.WriteLine("the name option!!");
+foreach (var option in bundle.Options)
+{
+    Console.WriteLine(option.Name);
+}
+Console.WriteLine();
+
+bundle.SetHandler((output, language, note ,remove, autho) =>
 {
     try
     {
-        File.Create(output.FullName);
-        Console.WriteLine("succsess!! open a new file");
+        if (string.IsNullOrEmpty(language))
+        {
+            Console.WriteLine("ERROR: --language option is required!");
+            return;
+        }
+
+        if (string.IsNullOrEmpty(output.ToString()))
+        {
+            Console.WriteLine("ERROR: --output option is required!");
+            return;
+        }
+
+        if (language == "all" || Enum.TryParse(language, true, out Elanguage lang))
+        {
+            File.Create(output.FullName);
+            if (note)
+            {
+                File.OpenWrite("//" + Environment.CurrentDirectory);
+            }
+            if (remove)
+            {
+                //delete a empty line!!
+            }
+            File.OpenWrite("//" + autho.ToString());
+        }
+        else
+        {
+            Console.WriteLine("ERROR: Only code files of the selected languages!");
+        }
+        Console.WriteLine("succsess!!");
     }
     catch (DirectoryNotFoundException ex)
     {
         Console.WriteLine("ERROR: the path invalid! check this.");
+        ex.Data.Clear();
     }
-},optionCommand);
+}, outputOption, languageOption, noteOptions, removeEmptyLinesOption, authorOption);
 
 
 
-var create_rspCommand = new Command("create-rsp", "Create a response file with a prepared command");
+//var create_rspCommand = new Command("create-rsp", "Create a response file with a prepared command");
 
-create_rspCommand.SetHandler(() =>
-{
-    Console.WriteLine("create_rspCommand new!!!");
-});
+//create_rspCommand.SetHandler(() =>
+//{
+//    Console.WriteLine("create_rspCommand new!!!");
+//});
 
 var rootCommand = new RootCommand("this opposite many page code to signel code");
-
 rootCommand.AddCommand(bundle);
-rootCommand.AddCommand(create_rspCommand);
+
+
+//rootCommand.AddCommand(create_rspCommand);
+Console.WriteLine("Arguments count: " + args.Length);
+foreach (var arg in args)
+{
+    Console.WriteLine("Argument: " + arg);
+}
 
 await rootCommand.InvokeAsync(args);
