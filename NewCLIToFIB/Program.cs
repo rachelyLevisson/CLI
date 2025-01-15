@@ -9,7 +9,9 @@ var noteOptions = new Option<FileAttributes>("--note", "The source code is in th
 
 var sortOption = new Option<SortedList<Stream>("--sort","Order of copying the code files");
 
-var removeEmptyLinesOption = new Option<List<StreamReader>>("--remove-empty-lines", "");
+var removeEmptyLinesOption = new Option<List<StreamReader>>("--remove-empty-lines", "Delete empty rows");
+
+var authorOption = new Option<FileInfo>("--author", "Register the name of the file creator");
 
 var bundle = new Command("bundle", "bundle code to opposite the single page");
 
