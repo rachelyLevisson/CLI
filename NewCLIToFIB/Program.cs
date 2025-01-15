@@ -34,8 +34,18 @@ bundle.SetHandler((output) =>
     }
 },optionCommand);
 
+
+
+var create_rspCommand = new Command("create-rsp", "Create a response file with a prepared command");
+
+create_rspCommand.SetHandler(() =>
+{
+    Console.WriteLine("create_rspCommand new!!!");
+});
+
 var rootCommand = new RootCommand("this opposite many page code to signel code");
 
 rootCommand.AddCommand(bundle);
+rootCommand.AddCommand(create_rspCommand);
 
 await rootCommand.InvokeAsync(args);
