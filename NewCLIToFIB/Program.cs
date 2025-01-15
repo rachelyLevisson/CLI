@@ -9,8 +9,15 @@ bundle.AddOption(optionCommand);
 
 bundle.SetHandler((output) =>
 {
-    File.Create(output.FullName);
-    Console.WriteLine("succsess!!");
+    try
+    {
+        File.Create(output.FullName);
+        Console.WriteLine("succsess!! open a new file");
+    }
+    catch (DirectoryNotFoundException ex)
+    {
+        Console.WriteLine("ERROR: the path invalid! check this.");
+    }
 },optionCommand);
 
 var rootCommand = new RootCommand("this opposite many page code to signel code");
