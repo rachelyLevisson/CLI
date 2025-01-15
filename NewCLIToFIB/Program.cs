@@ -7,7 +7,9 @@ var languageOption = new Option<List<string>>("--language", "the language the co
 
 var noteOptions = new Option<FileAttributes>("--note", "The source code is in the comment in the file");
 
-var sortOption = new Option<SortedList<StreamReader,string>("--sort","Order of copying the code files");
+var sortOption = new Option<SortedList<Stream>("--sort","Order of copying the code files");
+
+var removeEmptyLinesOption = new Option<List<StreamReader>>("--remove-empty-lines", "");
 
 var bundle = new Command("bundle", "bundle code to opposite the single page");
 
@@ -15,6 +17,7 @@ bundle.AddOption(optionCommand);
 bundle.AddOption(languageOption);
 bundle.AddOption(noteOptions);
 bundle.AddOption(sortOption);
+bundle.AddOption(removeEmptyLinesOption);
 
 bundle.SetHandler((output) =>
 {
