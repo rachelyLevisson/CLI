@@ -1,13 +1,13 @@
 ﻿
 using System.CommandLine;
 
-var outputOption = new Option<FileInfo>("--output","the path output");
+var outputOption = new Option<FileInfo>("--output", "the path output");
 
 var languageOption = new Option<string>("--language", "the language the code or all");
 
 var noteOptions = new Option<bool>("--note", "The source code is in the comment in the file");
 
-var sortOption = new Option<string>("--sort","Order of copying the code files");
+var sortOption = new Option<string>("--sort", "Order of copying the code files");
 
 var removeEmptyLinesOption = new Option<bool>("--remove-empty-lines", "Delete empty rows");
 
@@ -29,51 +29,67 @@ foreach (var option in bundle.Options)
 }
 Console.WriteLine();
 
-bundle.SetHandler((output, language, note ,remove, autho) =>
+
+
+
+
+bundle.SetHandler((output, language, note, remove, autho) =>
 {
-    try
+    //האם הקיש בכלל את האפשרות של שפה
+    if (string.IsNullOrEmpty(language))
     {
-        if (string.IsNullOrEmpty(language))
-        {
-            Console.WriteLine("ERROR: --language option is required!");
-            return;
-        }
+        Console.WriteLine("ERROR: --language option is required!");
+        return;
+    }
 
-        if (string.IsNullOrEmpty(output.ToString()))
-        {
-            Console.WriteLine("ERROR: --output option is required!");
-            return;
-        }
+    // האם הכניס ניתוב כל שהוא אם לא יכניס ערך ברירת מחדל
+    if (string.IsNullOrEmpty(output.ToString()))
+    {
+        Console.WriteLine("ERROR: --output option is required!");
+    }
+    else
+        output = new FileInfo("text.txt");
 
-        if (language == "all" || Enum.TryParse(language, true, out Elanguage lang))
+    //האם השפה שהוקשה נמצאת ברשימה
+    if (language == "all" || Enum.TryParse(language, true, out Elanguage lang))
+    {
+        try
         {
             File.Create(output.FullName);
-            if (note)
+            string[] file = Directory.GetFiles(Environment.CurrentDirectory);
+            foreach (var item in file)
             {
-                File.OpenWrite("//" + Environment.CurrentDirectory);
+                File.WriteAllText(output.ToString(),File.ReadAllText(item));
             }
-            if (remove)
-            {
-                //delete a empty line!!
-            }
-            File.OpenWrite("//" + autho.ToString());
         }
-        else
+        catch (DirectoryNotFoundException ex)
         {
-            Console.WriteLine("ERROR: Only code files of the selected languages!");
+            Console.WriteLine("ERROR: the path invalid! check this.");
+            ex.Data.Clear();
         }
-        Console.WriteLine("succsess!!");
+        //האם הקיש את האופציה ומכילה TRUE
+        if (note)
+        {
+            File.OpenWrite("#" + Environment.CurrentDirectory);
+        }
+        //האם הקיש את האופציה ומכילה TRUE
+        if (remove)
+        {
+            //delete a empty line!!
+        }
+        if (string.IsNullOrEmpty(autho.ToString()))
+            File.OpenWrite("#" + autho.ToString());
     }
-    catch (DirectoryNotFoundException ex)
+    else
     {
-        Console.WriteLine("ERROR: the path invalid! check this.");
-        ex.Data.Clear();
+        Console.WriteLine("ERROR: Only code files of the selected languages!");
     }
+    Console.WriteLine("succsess!!");
 }, outputOption, languageOption, noteOptions, removeEmptyLinesOption, authorOption);
 
 
 
-//var create_rspCommand = new Command("create-rsp", "Create a response file with a prepared command");
+var create_rspCommand = new Command("create-rsp", "Create a response file with a prepared command");
 
 //create_rspCommand.SetHandler(() =>
 //{
