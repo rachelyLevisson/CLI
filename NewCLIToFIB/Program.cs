@@ -50,7 +50,6 @@ Console.WriteLine("come!!");
 bundle.SetHandler((output, language, note, remove, autho) =>
 {
     Console.WriteLine("come to  SetHandler!!");
-
     try
     {
         //      האם הקיש בכלל את האפשרות של שפה
@@ -59,45 +58,63 @@ bundle.SetHandler((output, language, note, remove, autho) =>
             Console.WriteLine("ERROR: --language option is required!");
             return;
         }
-        //    האם הכניס ניתוב כל שהוא אם לא יכניס ערך ברירת מחדל
-        //if (string.IsNullOrEmpty(output.ToString()))
-        //{
-        //    Console.WriteLine("ERROR: --output option is required!");
-        //    output = new FileInfo("text.txt");
-        //}
-        //      האם השפה שהוקשה נמצאת ברשימה
         if (language == "all" || Enum.TryParse(language, true, out Elanguage lang))
         {
             try
             {
-                File.Create(output.FullName);
+                FileStream fs = File.Create(output.FullName);
                 string[] file = Directory.GetFiles(Environment.CurrentDirectory);
-                Console.WriteLine("lenght: "+file.Length);
-                foreach (var item in file)
+                Console.WriteLine("lenght: " + file.Length);
+                using (StreamWriter writer = new StreamWriter(fs))
                 {
-                    Console.WriteLine(item);
+                    //    האם הקיש את האופציה ומכילה TRUE
+                    if (note)
+                    {
+                        Console.WriteLine("i enter to note!!");
+                        writer.WriteLine("# " + Environment.CurrentDirectory);
+                    }
+                    if (!string.IsNullOrEmpty(autho))
+                    {
+                        Console.WriteLine("i enter to author!!");
+                        writer.WriteLine("#" + autho);
+                    }
+                    foreach (var item in file)
+                    {
+                        Console.WriteLine(item);
+                        writer.WriteLine("succssess!! towrite");
+                        if (item != output.FullName)
+                        {
+                            using (StreamReader sr = new StreamReader(item))
+                            {
+                                writer.WriteLine(sr.ReadToEnd());
+                            }
+                        }
+                    }
+                    //האם הקיש את האופציה ומכילה TRUE
                 }
-                //    האם הקיש את האופציה ומכילה TRUE
-                if (note)
-                {
-                    Console.WriteLine("i enter to note!!");
-                    File.AppendText("the write me😜💥");
-                    Console.WriteLine("i write");
-                    File.AppendText("#" + Environment.CurrentDirectory);
-                }
-                //האם הקיש את האופציה ומכילה TRUE
+                Console.WriteLine("come?");
+
                 if (remove)
                 {
-                    Console.WriteLine("i enter to remove!!");
-
-                    //delete a empty line!!
+                    Console.WriteLine("come hear!!");
+                    //using (StreamWriter writer2 = new StreamWriter(fs))
+                    //{
+                        Console.WriteLine("i enter to remove!!");
+                    using (StreamReader sRemove = new StreamReader(fs))
+                    {
+                        Console.WriteLine("problem?");
+                        foreach (var item in sRemove.ReadLine())
+                        {
+                            if (item.ToString() == "")
+                                Console.WriteLine("delete");
+                        }
+                    }
+                   // }
                 }
-                if (string.IsNullOrEmpty(autho.ToString()))
-                {
-                    Console.WriteLine("i enter to author!!");
-                    File.OpenWrite("#" + autho.ToString());
-                }
+                //delete a empty line!!
+                fs.Close();
             }
+
             catch (DirectoryNotFoundException ex)
             {
                 Console.WriteLine("ERROR: the path invalid! check this.");
@@ -106,13 +123,21 @@ bundle.SetHandler((output, language, note, remove, autho) =>
             catch (IOException e)
             {
                 Console.WriteLine("Worng!!");
+                Console.WriteLine(e.Message);
+            }
+            catch(ArgumentException e)
+            {
+                Console.WriteLine("Error: in delete line");
+                Console.WriteLine(e.Message);
+            }
+            finally
+            {
+                Console.WriteLine("finally!");
             }
             Console.WriteLine("sucssess!!! yesh! yesh! ♥️🎁💥🍔😜");
         }
         else
-        {
             Console.WriteLine("ERROR: Only code files of the selected languages!");
-        }
         Console.WriteLine("succsess!! 😆😂😃🙌🏻");
     }
     catch (NullReferenceException e)
@@ -120,14 +145,6 @@ bundle.SetHandler((output, language, note, remove, autho) =>
         Console.WriteLine("hihi");
         Console.WriteLine(e.Message);
     }
-    #region //
-    //  }
-    //catch (IOException e)
-    //{
-    //    Console.WriteLine("wo no vivivivi........🥹😞😭");
-    //}
-    //catch (NullReferenceException ne) { Console.WriteLine("errorr ooooffffff"+ne.Message); }
-    #endregion
 }, outputOption, languageOption, noteOptions, removeEmptyLinesOption, authorOption);
 
 #region //
