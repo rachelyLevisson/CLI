@@ -62,16 +62,18 @@ bundle.SetHandler((output, language, note, remove, autho) =>
         {
             try
             {
-                FileStream fs = File.Create(output.FullName);
+                string path = output.FullName;
+                using (FileStream fs = File.Create(path)) { }
                 string[] file = Directory.GetFiles(Environment.CurrentDirectory);
                 Console.WriteLine("lenght: " + file.Length);
-                using (StreamWriter writer = new StreamWriter(fs))
+                using (StreamWriter writer = new StreamWriter(path, true))
                 {
                     //    האם הקיש את האופציה ומכילה TRUE
                     if (note)
                     {
                         Console.WriteLine("i enter to note!!");
                         writer.WriteLine("# " + Environment.CurrentDirectory);
+                        writer.WriteLine();
                     }
                     if (!string.IsNullOrEmpty(autho))
                     {
@@ -99,20 +101,30 @@ bundle.SetHandler((output, language, note, remove, autho) =>
                     Console.WriteLine("come hear!!");
                     //using (StreamWriter writer2 = new StreamWriter(fs))
                     //{
-                        Console.WriteLine("i enter to remove!!");
-                    using (StreamReader sRemove = new StreamReader(fs))
-                    {
-                        Console.WriteLine("problem?");
-                        foreach (var item in sRemove.ReadLine())
-                        {
-                            if (item.ToString() == "")
-                                Console.WriteLine("delete");
-                        }
-                    }
-                   // }
+                    Console.WriteLine("i enter to remove!!");
+                    var lines = File.ReadAllLines(path);
+
+                    // Filter out empty lines
+                    var nonEmptyLines = lines.Where(line => !string.IsNullOrWhiteSpace(line)).ToArray();
+
+                    // Write the non-empty lines back to the file
+                    File.WriteAllLines(path, nonEmptyLines);
+                    //using (StreamReader sRemove = new StreamReader(path))
+                    //{
+                    //    Console.WriteLine("problem?");
+                    //    string isEmpty = sRemove.ReadLine();
+                    //    while(isEmpty != null)
+                    //    {
+                    //        if (string.IsNullOrWhiteSpace(isEmpty))
+                    //            Console.WriteLine("delete");
+                    //        sRemove.
+                    //        isEmpty = sRemove.ReadLine();
+                    //    }
+                    //}
+                    // }
                 }
                 //delete a empty line!!
-                fs.Close();
+                //fs.Close();
             }
 
             catch (DirectoryNotFoundException ex)
@@ -125,7 +137,7 @@ bundle.SetHandler((output, language, note, remove, autho) =>
                 Console.WriteLine("Worng!!");
                 Console.WriteLine(e.Message);
             }
-            catch(ArgumentException e)
+            catch (ArgumentException e)
             {
                 Console.WriteLine("Error: in delete line");
                 Console.WriteLine(e.Message);
