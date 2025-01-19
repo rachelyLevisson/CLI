@@ -1,45 +1,26 @@
 ﻿
 using System.CommandLine;
 
-var outputOption = new Option<FileInfo>(
- new[] { "--output", "-o" },
-  "the path output"
-    );
+var outputOption = new Option<FileInfo>(new[] { "--output", "-o" }, "the path output");
 
-
-//var languageOption = new Option<string>("--language", "the language the code or all");
-
-var languageOption = new Option<string>(
-    new[] { "--language", "-l" }, // Define both the long and short options
-    "the language the code or all"
-);
+var languageOption = new Option<string>
+    (new[] { "--language", "-l" }, "the language the code or all");
 
 var noteOptions = new Option<bool>("--note", "The source code is in the comment in the file");
-
 noteOptions.AddAlias("-n");
 
 var sortOption = new Option<string>("--sort", "Order of copying the code files");
-
 sortOption.AddAlias("-s");
 sortOption.SetDefaultValue("abc");
 
 var removeEmptyLinesOption = new Option<bool>("--remove-empty-lines", "Delete empty rows");
-
 removeEmptyLinesOption.AddAlias("-rem");
 
 var authorOption = new Option<string>("--author", "Register the name of the file creator");
-
 authorOption.AddAlias("-a");
 
+
 var bundle = new Command("bundle", "bundle code to opposite the single page");
-
-
-
-if (languageOption.Name == null | languageOption.Name == "")
-{
-    Console.WriteLine("Error: invalid!! enter language!!!");
-    return;
-}
 
 bundle.AddOption(languageOption);
 bundle.AddOption(outputOption);
@@ -49,19 +30,8 @@ bundle.AddOption(removeEmptyLinesOption);
 bundle.AddOption(authorOption);
 
 
-Console.WriteLine("the name option!!");
-foreach (var option in bundle.Options)
-{
-    Console.WriteLine(option.Name);
-}
-Console.WriteLine();
-Console.WriteLine("come!!");
-
-
-
 bundle.SetHandler((output, language, note, sort, remove, autho) =>
 {
-    Console.WriteLine("come to  SetHandler!!");
     try
     {
         //      האם הקיש בכלל את האפשרות של שפה
@@ -76,7 +46,6 @@ bundle.SetHandler((output, language, note, sort, remove, autho) =>
             return;
         }
 
-        Console.WriteLine("over?");
         if (language == "all" || Enum.TryParse(language, true, out Elanguage lang))
         {
             try
@@ -88,41 +57,35 @@ bundle.SetHandler((output, language, note, sort, remove, autho) =>
                 //sort
                 if (!string.IsNullOrEmpty(sort))
                 {
-                    if(sort == "abc")
+                    if (sort == "abc")
                     {
                         file = file.OrderBy(f => Path.GetFileName(f)).ToArray();
                     }
                     //type code
                     else
                     {
-                        file = file.OrderBy(f=> Path.GetExtension(f)).ToArray();
+                        file = file.OrderBy(f => Path.GetExtension(f)).ToArray();
                     }
                 }
-                
 
                 using (StreamWriter writer = new StreamWriter(path, true))
                 {
                     //    האם הקיש את האופציה ומכילה TRUE
                     if (note)
                     {
-                        Console.WriteLine("i enter to note!!");
                         writer.WriteLine("# " + Environment.CurrentDirectory);
-                        writer.WriteLine();
                     }
 
                     if (!string.IsNullOrEmpty(autho))
+                        writer.WriteLine("#" + autho);
+                    else
                     {
                         if (autho == "")
-                            Console.WriteLine("ERRORRRRRRRR");
-                        Console.WriteLine("i enter to author!!");
-                        writer.WriteLine("#" + autho);
+                            Console.WriteLine("ERROR: this dont author!!");
                     }
-                    else
-                    Console.WriteLine("ERROR: this dont author!!");
+
                     foreach (var item in file)
                     {
-                        Console.WriteLine(item);
-                        writer.WriteLine("succssess!! towrite");
                         writer.WriteLine(item);
                         if (item != output.FullName)
                         {
@@ -134,19 +97,12 @@ bundle.SetHandler((output, language, note, sort, remove, autho) =>
                     }
                     //האם הקיש את האופציה ומכילה TRUE
                 }
-                Console.WriteLine("come?");
 
                 if (remove)
                 {
-                    Console.WriteLine("i enter to remove!!");
                     var lines = File.ReadAllLines(path);
-
-                    // Filter out empty lines
-                    var nonEmptyLines = lines.Where(line => !string.IsNullOrWhiteSpace(line)).ToArray();
-
-                    // Write the non-empty lines back to the file
+                    var nonEmptyLines = lines.Where(line => !string.IsNullOrWhiteSpace(line.Trim())&& line!= "\n").ToArray();
                     File.WriteAllLines(path, nonEmptyLines);
-                    Console.WriteLine("i do this!!");
                 }
             }
 
@@ -166,53 +122,52 @@ bundle.SetHandler((output, language, note, sort, remove, autho) =>
                 Console.WriteLine(e.Message);
             }
             catch (Exception e)
-            { 
+            {
                 Console.WriteLine("come this");
                 Console.WriteLine(e.Message);
             }
-            finally
-            {
-                Console.WriteLine("finally!");
-            }
-            Console.WriteLine("sucssess!!! yesh! yesh! ♥️🎁💥🍔😜");
         }
         else
             Console.WriteLine("ERROR: Only code files of the selected languages!");
-        Console.WriteLine("succsess!! 😆😂😃🙌🏻");
     }
     catch (NullReferenceException e)
     {
         Console.WriteLine("ERROR: not enter the path!!");
         Console.WriteLine(e.Message);
     }
-}, outputOption, languageOption, noteOptions,sortOption, removeEmptyLinesOption, authorOption);
+}, outputOption, languageOption, noteOptions, sortOption, removeEmptyLinesOption, authorOption);
 
-#region //
-//var create_rspCommand = new Command("create-rsp", "Create a response file with a prepared command");
+var create_rspCommand = new Command("create-rsp", "Create a response file with a prepared command");
 
-//create_rspCommand.SetHandler(() =>
-//{
-//    Console.WriteLine("create_rspCommand new!!!");
-//});
-#endregion
+create_rspCommand.SetHandler(() =>
+{
+    Console.WriteLine("enter the language to need or press all");
+    //
+    Console.WriteLine("press path to signale file");
+    //
+    Console.WriteLine("Do you want the write source code? y/n");
+    char answer = char.Parse(Console.ReadLine());
+    //
+    Console.WriteLine("Do you want the file is sort? enter abc or type the abc is defulte");
+    string answerSorc = Console.ReadLine();
+    //
+    Console.WriteLine("Do you want the remove the empy line? y/n");
+    answer = char.Parse(Console.ReadLine());
+    //
+    Console.WriteLine();
+});
 
 var rootCommand = new RootCommand("this opposite many page code to signel code");
 rootCommand.AddCommand(bundle);
 
 
 //rootCommand.AddCommand(create_rspCommand);
-Console.WriteLine("the Arguments count: " + args.Length);
-foreach (var arg in args)
-{
-    Console.WriteLine("ArgumentTo: " + arg);
-}
-Console.WriteLine("finishhhh!!");
-if ((args[1]== "--language" || args[1]== "-l") &&( args[2] == "--output" || args[2] == "-o"))
+if ((args[1] == "--language" || args[1] == "-l") && (args[2] == "--output" || args[2] == "-o"))
 {
     Console.WriteLine("ERROR!!!");
     return;
 }
-if (args[args.Length-1] == "-a" || args[args.Length-1]== "--author")
+if (args[args.Length - 1] == "-a" || args[args.Length - 1] == "--author")
 {
     Console.WriteLine("ERROR!!!");
     return;
