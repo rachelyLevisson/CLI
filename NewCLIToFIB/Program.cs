@@ -20,6 +20,9 @@ noteOptions.AddAlias("-n");
 
 var sortOption = new Option<string>("--sort", "Order of copying the code files");
 
+sortOption.AddAlias("-s");
+sortOption.SetDefaultValue("abc");
+
 var removeEmptyLinesOption = new Option<bool>("--remove-empty-lines", "Delete empty rows");
 
 removeEmptyLinesOption.AddAlias("-rem");
@@ -30,12 +33,21 @@ authorOption.AddAlias("-a");
 
 var bundle = new Command("bundle", "bundle code to opposite the single page");
 
+
+
+if (languageOption.Name == null | languageOption.Name == "")
+{
+    Console.WriteLine("Error: invalid!! enter language!!!");
+    return;
+}
+
 bundle.AddOption(languageOption);
 bundle.AddOption(outputOption);
 bundle.AddOption(noteOptions);
 bundle.AddOption(sortOption);
 bundle.AddOption(removeEmptyLinesOption);
 bundle.AddOption(authorOption);
+
 
 Console.WriteLine("the name option!!");
 foreach (var option in bundle.Options)
@@ -47,7 +59,7 @@ Console.WriteLine("come!!");
 
 
 
-bundle.SetHandler((output, language, note, remove, autho) =>
+bundle.SetHandler((output, language, note, sort, remove, autho) =>
 {
     Console.WriteLine("come to  SetHandler!!");
     try
@@ -58,6 +70,13 @@ bundle.SetHandler((output, language, note, remove, autho) =>
             Console.WriteLine("ERROR: --language option is required!");
             return;
         }
+        if (output.Name[0] == '-')
+        {
+            Console.WriteLine("ERROR: --output option is required!");
+            return;
+        }
+
+        Console.WriteLine("over?");
         if (language == "all" || Enum.TryParse(language, true, out Elanguage lang))
         {
             try
@@ -65,7 +84,22 @@ bundle.SetHandler((output, language, note, remove, autho) =>
                 string path = output.FullName;
                 using (FileStream fs = File.Create(path)) { }
                 string[] file = Directory.GetFiles(Environment.CurrentDirectory);
-                Console.WriteLine("lenght: " + file.Length);
+
+                //sort
+                if (!string.IsNullOrEmpty(sort))
+                {
+                    if(sort == "abc")
+                    {
+                        file = file.OrderBy(f => Path.GetFileName(f)).ToArray();
+                    }
+                    //type code
+                    else
+                    {
+                        file = file.OrderBy(f=> Path.GetExtension(f)).ToArray();
+                    }
+                }
+                
+
                 using (StreamWriter writer = new StreamWriter(path, true))
                 {
                     //    האם הקיש את האופציה ומכילה TRUE
@@ -75,15 +109,21 @@ bundle.SetHandler((output, language, note, remove, autho) =>
                         writer.WriteLine("# " + Environment.CurrentDirectory);
                         writer.WriteLine();
                     }
+
                     if (!string.IsNullOrEmpty(autho))
                     {
+                        if (autho == "")
+                            Console.WriteLine("ERRORRRRRRRR");
                         Console.WriteLine("i enter to author!!");
                         writer.WriteLine("#" + autho);
                     }
+                    else
+                    Console.WriteLine("ERROR: this dont author!!");
                     foreach (var item in file)
                     {
                         Console.WriteLine(item);
                         writer.WriteLine("succssess!! towrite");
+                        writer.WriteLine(item);
                         if (item != output.FullName)
                         {
                             using (StreamReader sr = new StreamReader(item))
@@ -98,9 +138,6 @@ bundle.SetHandler((output, language, note, remove, autho) =>
 
                 if (remove)
                 {
-                    Console.WriteLine("come hear!!");
-                    //using (StreamWriter writer2 = new StreamWriter(fs))
-                    //{
                     Console.WriteLine("i enter to remove!!");
                     var lines = File.ReadAllLines(path);
 
@@ -109,22 +146,8 @@ bundle.SetHandler((output, language, note, remove, autho) =>
 
                     // Write the non-empty lines back to the file
                     File.WriteAllLines(path, nonEmptyLines);
-                    //using (StreamReader sRemove = new StreamReader(path))
-                    //{
-                    //    Console.WriteLine("problem?");
-                    //    string isEmpty = sRemove.ReadLine();
-                    //    while(isEmpty != null)
-                    //    {
-                    //        if (string.IsNullOrWhiteSpace(isEmpty))
-                    //            Console.WriteLine("delete");
-                    //        sRemove.
-                    //        isEmpty = sRemove.ReadLine();
-                    //    }
-                    //}
-                    // }
+                    Console.WriteLine("i do this!!");
                 }
-                //delete a empty line!!
-                //fs.Close();
             }
 
             catch (DirectoryNotFoundException ex)
@@ -142,6 +165,11 @@ bundle.SetHandler((output, language, note, remove, autho) =>
                 Console.WriteLine("Error: in delete line");
                 Console.WriteLine(e.Message);
             }
+            catch (Exception e)
+            { 
+                Console.WriteLine("come this");
+                Console.WriteLine(e.Message);
+            }
             finally
             {
                 Console.WriteLine("finally!");
@@ -154,10 +182,10 @@ bundle.SetHandler((output, language, note, remove, autho) =>
     }
     catch (NullReferenceException e)
     {
-        Console.WriteLine("hihi");
+        Console.WriteLine("ERROR: not enter the path!!");
         Console.WriteLine(e.Message);
     }
-}, outputOption, languageOption, noteOptions, removeEmptyLinesOption, authorOption);
+}, outputOption, languageOption, noteOptions,sortOption, removeEmptyLinesOption, authorOption);
 
 #region //
 //var create_rspCommand = new Command("create-rsp", "Create a response file with a prepared command");
@@ -179,4 +207,14 @@ foreach (var arg in args)
     Console.WriteLine("ArgumentTo: " + arg);
 }
 Console.WriteLine("finishhhh!!");
+if ((args[1]== "--language" || args[1]== "-l") &&( args[2] == "--output" || args[2] == "-o"))
+{
+    Console.WriteLine("ERROR!!!");
+    return;
+}
+if (args[args.Length-1] == "-a" || args[args.Length-1]== "--author")
+{
+    Console.WriteLine("ERROR!!!");
+    return;
+}
 await rootCommand.InvokeAsync(args);
