@@ -93,9 +93,9 @@ bundle.SetHandler((output, language, note, sort, remove, autho) =>
 
                     foreach (var item in file)
                     {
-                        writer.WriteLine(item);
                         if (item != output.FullName)
                         {
+                            writer.WriteLine(item);
                             using (StreamReader sr = new StreamReader(item))
                             {
                                 writer.WriteLine(sr.ReadToEnd());
@@ -141,48 +141,51 @@ bundle.SetHandler((output, language, note, sort, remove, autho) =>
 
 var create_rspCommand = new Command("create_rsp", "Create a response file with a prepared command");
 
+
 create_rspCommand.SetHandler(() =>
 {
-    using (StreamWriter writer = new StreamWriter("res.rsp", true))
+    try
     {
-        writer.WriteLine(bundle);
-        Console.Write("enter the language to need or press all  ");
-      //  languageOption.Name = Console.ReadLine();
-        writer.WriteLine($"-l  {Console.ReadLine()} ");
-
-        Console.Write("press path to signale file  ");
-        writer.WriteLine($"-o {Console.ReadLine()} ");
-
-        Console.Write("Do you want the write source code? y/n  ");
-        char answer = char.Parse(Console.ReadLine());
-        if (answer == 'y')
-            writer.WriteLine("-n ");
-
-        Console.Write("Do you want the file is sort? y/n  ");
-        answer = char.Parse(Console.ReadLine());
-        if (answer == 'y')
+        using (StreamWriter writer = new StreamWriter("responsefile.rsp", true))
         {
-            Console.Write("enter abc or type the abc is defulte  ");
-            string answerSorc = Console.ReadLine();
-            writer.WriteLine($"-o {answerSorc} ");
-        }
+            writer.WriteLine("bundle");
+            Console.Write("enter the language to need or press all  ");
+            writer.WriteLine($"-l  {Console.ReadLine()} ");
 
-        Console.Write("Do you want the remove the empy line? y/n  ");
-        answer = char.Parse(Console.ReadLine());
-        if (answer == 'y')
-            writer.WriteLine("-rem ");
+            Console.Write("press path to signale file  ");
+            writer.WriteLine($"-o {Console.ReadLine()} ");
 
-        Console.Write("Do you want teh write authoe? y/n  ");
-        answer = char.Parse(Console.ReadLine());
-        if (answer == 'y')
-        {
-            Console.Write("enter the name  ");
-            string answerName = Console.ReadLine();
-             writer.WriteLine("-a " + answerName);
+            Console.Write("Do you want the write source code? y/n  ");
+            char answer = char.Parse(Console.ReadLine());
+            if (answer == 'y')
+                writer.WriteLine("-n ");
+
+            Console.Write("Do you want the file is sort? y/n  ");
+            answer = char.Parse(Console.ReadLine());
+            if (answer == 'y')
+            {
+                Console.Write("enter abc or type the abc is defulte  ");
+                string answerSorc = Console.ReadLine();
+                writer.WriteLine($"-s {answerSorc} ");
+            }
+
+            Console.Write("Do you want the remove the empy line? y/n  ");
+            answer = char.Parse(Console.ReadLine());
+            if (answer == 'y')
+                writer.WriteLine("-rem ");
+
+            Console.Write("Do you want teh write authoe? y/n  ");
+            answer = char.Parse(Console.ReadLine());
+            if (answer == 'y')
+            {
+                Console.Write("enter the name  ");
+                string answerName = Console.ReadLine();
+                writer.WriteLine("-a " + answerName);
+            }
         }
     }
+    catch (IOException) { }
 });
-
 
 var rootCommand = new RootCommand("this opposite many page code to signel code");
 rootCommand.AddCommand(bundle);
