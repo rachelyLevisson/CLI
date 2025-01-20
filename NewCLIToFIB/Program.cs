@@ -1,10 +1,12 @@
 ﻿
 using System.CommandLine;
+using System.Linq;
 
-var outputOption = new Option<FileInfo>(new[] { "--output", "-o" }, "the path output");
+var outputOption = new Option<FileInfo>("--output", "the path output") { IsRequired = true };
+outputOption.AddAlias("-o");
 
-var languageOption = new Option<string>
-    (new[] { "--language", "-l" }, "the language the code or all");
+var languageOption = new Option<string>("--language", "the language the code or all") { IsRequired = true };
+languageOption.AddAlias("-l");
 
 var noteOptions = new Option<bool>("--note", "The source code is in the comment in the file");
 noteOptions.AddAlias("-n");
@@ -34,15 +36,15 @@ bundle.SetHandler((output, language, note, sort, remove, autho) =>
 {
     try
     {
-        //      האם הקיש בכלל את האפשרות של שפה
-        if (string.IsNullOrEmpty(language))
+        if (string.IsNullOrEmpty(output.FullName))
         {
-            Console.WriteLine("ERROR: --language option is required!");
+            Console.WriteLine("ERROR: the path is required");
             return;
         }
-        if (output.Name[0] == '-')
+
+        if (File.Exists(output.FullName))
         {
-            Console.WriteLine("ERROR: --output option is required!");
+            Console.WriteLine("ERROR: Output file already exists! Choose a different path.");
             return;
         }
 
@@ -76,12 +78,17 @@ bundle.SetHandler((output, language, note, sort, remove, autho) =>
                         writer.WriteLine("# " + Environment.CurrentDirectory);
                     }
 
-                    if (!string.IsNullOrEmpty(autho))
-                        writer.WriteLine("#" + autho);
-                    else
+
+                    if (autho != null)
                     {
-                        if (autho == "")
-                            Console.WriteLine("ERROR: this dont author!!");
+                        if (!string.IsNullOrWhiteSpace(autho))
+                        {
+                            writer.WriteLine("#" + autho);
+                        }
+                        else
+                        {
+                            Console.WriteLine("ERROR: Author field is empty!");
+                        }
                     }
 
                     foreach (var item in file)
@@ -95,107 +102,90 @@ bundle.SetHandler((output, language, note, sort, remove, autho) =>
                             }
                         }
                     }
-                    //האם הקיש את האופציה ומכילה TRUE
                 }
 
                 if (remove)
                 {
                     var lines = File.ReadAllLines(path);
-                    var nonEmptyLines = lines.Where(line => !string.IsNullOrWhiteSpace(line.Trim()) && line != "\n").ToArray();
+                    var nonEmptyLines = lines.Where(line => !string.IsNullOrWhiteSpace(line)).ToArray();
                     File.WriteAllLines(path, nonEmptyLines);
                 }
             }
 
-            catch (DirectoryNotFoundException ex)
+            catch (DirectoryNotFoundException)
             {
-                Console.WriteLine("ERROR: the path invalid! check this.");
-                ex.Data.Clear();
+                Console.WriteLine("ERROR: The specified directory does not exist!");
             }
-            catch (IOException e)
+            catch (IOException)
             {
-                Console.WriteLine("Worng!!");
-                Console.WriteLine(e.Message);
+                Console.WriteLine("ERROR: An I/O error occurred.");
             }
-            catch (ArgumentException e)
+            catch (ArgumentException ex)
             {
-                Console.WriteLine("Error: in delete line");
-                Console.WriteLine(e.Message);
+                Console.WriteLine($"ERROR: Argument exception occurred: {ex.Message}");
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                Console.WriteLine("come this");
-                Console.WriteLine(e.Message);
+                Console.WriteLine("ERROR: An unexpected error occurred.");
             }
         }
         else
-            Console.WriteLine("ERROR: Only code files of the selected languages!");
+            Console.WriteLine("ERROR: Only code files of the selected languages are allowed!");
     }
-    catch (NullReferenceException e)
+    catch (NullReferenceException)
     {
-        Console.WriteLine("ERROR: not enter the path!!");
-        Console.WriteLine(e.Message);
+        Console.WriteLine("ERROR: Path not provided!");
     }
 }, outputOption, languageOption, noteOptions, sortOption, removeEmptyLinesOption, authorOption);
 
-var create_rspCommand = new Command("create-rsp", "Create a response file with a prepared command");
+
+var create_rspCommand = new Command("create_rsp", "Create a response file with a prepared command");
 
 create_rspCommand.SetHandler(() =>
 {
-    string option = "-l ";
-    Console.WriteLine("enter the language to need or press all");
-    option += Console.ReadLine();
-
-    Console.WriteLine("press path to signale file");
-    option += " -o ";
-    option += Console.ReadLine();
-    option += " ";
-
-    Console.WriteLine("Do you want the write source code? y/n");
-    char answer = char.Parse(Console.ReadLine());
-    if (answer == 'y')
-        option += "-n ";
-
-    Console.WriteLine("Do you want the file is sort? y/n");
-    answer = char.Parse(Console.ReadLine());
-    if (answer == 'y')
+    using (StreamWriter writer = new StreamWriter("res.rsp", true))
     {
-        Console.WriteLine("enter abc or type the abc is defulte");
-        string answerSorc = Console.ReadLine();
-        option += "-s " + answerSorc;
-        option += " ";
+        writer.WriteLine(bundle);
+        Console.Write("enter the language to need or press all  ");
+      //  languageOption.Name = Console.ReadLine();
+        writer.WriteLine($"-l  {Console.ReadLine()} ");
+
+        Console.Write("press path to signale file  ");
+        writer.WriteLine($"-o {Console.ReadLine()} ");
+
+        Console.Write("Do you want the write source code? y/n  ");
+        char answer = char.Parse(Console.ReadLine());
+        if (answer == 'y')
+            writer.WriteLine("-n ");
+
+        Console.Write("Do you want the file is sort? y/n  ");
+        answer = char.Parse(Console.ReadLine());
+        if (answer == 'y')
+        {
+            Console.Write("enter abc or type the abc is defulte  ");
+            string answerSorc = Console.ReadLine();
+            writer.WriteLine($"-o {answerSorc} ");
+        }
+
+        Console.Write("Do you want the remove the empy line? y/n  ");
+        answer = char.Parse(Console.ReadLine());
+        if (answer == 'y')
+            writer.WriteLine("-rem ");
+
+        Console.Write("Do you want teh write authoe? y/n  ");
+        answer = char.Parse(Console.ReadLine());
+        if (answer == 'y')
+        {
+            Console.Write("enter the name  ");
+            string answerName = Console.ReadLine();
+             writer.WriteLine("-a " + answerName);
+        }
     }
-
-    Console.WriteLine("Do you want the remove the empy line? y/n");
-    answer = char.Parse(Console.ReadLine());
-    if (answer == 'y')
-        option += "-rem ";
-
-    Console.WriteLine("Do you want teh write authoe? y/n");
-    answer=char.Parse(Console.ReadLine());
-    if(answer == 'y')
-    {
-        Console.WriteLine("enter the name");
-        string answerName = Console.ReadLine();
-        option += "-a " + answerName;
-    }
-    option = option.TrimEnd();
-
-    bundle.(option);
 });
+
 
 var rootCommand = new RootCommand("this opposite many page code to signel code");
 rootCommand.AddCommand(bundle);
+rootCommand.AddCommand(create_rspCommand);
 
-
-//rootCommand.AddCommand(create_rspCommand);
-if ((args[1] == "--language" || args[1] == "-l") && (args[2] == "--output" || args[2] == "-o"))
-{
-    Console.WriteLine("ERROR!!!");
-    return;
-}
-if (args[args.Length - 1] == "-a" || args[args.Length - 1] == "--author")
-{
-    Console.WriteLine("ERROR!!!");
-    return;
-}
 await rootCommand.InvokeAsync(args);
