@@ -101,7 +101,7 @@ bundle.SetHandler((output, language, note, sort, remove, autho) =>
                 if (remove)
                 {
                     var lines = File.ReadAllLines(path);
-                    var nonEmptyLines = lines.Where(line => !string.IsNullOrWhiteSpace(line.Trim())&& line!= "\n").ToArray();
+                    var nonEmptyLines = lines.Where(line => !string.IsNullOrWhiteSpace(line.Trim()) && line != "\n").ToArray();
                     File.WriteAllLines(path, nonEmptyLines);
                 }
             }
@@ -141,20 +141,46 @@ var create_rspCommand = new Command("create-rsp", "Create a response file with a
 
 create_rspCommand.SetHandler(() =>
 {
+    string option = "-l ";
     Console.WriteLine("enter the language to need or press all");
-    //
+    option += Console.ReadLine();
+
     Console.WriteLine("press path to signale file");
-    //
+    option += " -o ";
+    option += Console.ReadLine();
+    option += " ";
+
     Console.WriteLine("Do you want the write source code? y/n");
     char answer = char.Parse(Console.ReadLine());
-    //
-    Console.WriteLine("Do you want the file is sort? enter abc or type the abc is defulte");
-    string answerSorc = Console.ReadLine();
-    //
+    if (answer == 'y')
+        option += "-n ";
+
+    Console.WriteLine("Do you want the file is sort? y/n");
+    answer = char.Parse(Console.ReadLine());
+    if (answer == 'y')
+    {
+        Console.WriteLine("enter abc or type the abc is defulte");
+        string answerSorc = Console.ReadLine();
+        option += "-s " + answerSorc;
+        option += " ";
+    }
+
     Console.WriteLine("Do you want the remove the empy line? y/n");
     answer = char.Parse(Console.ReadLine());
-    //
-    Console.WriteLine();
+    if (answer == 'y')
+        option += "-rem ";
+
+    Console.WriteLine("Do you want teh write authoe? y/n");
+    answer=char.Parse(Console.ReadLine());
+    if(answer == 'y')
+    {
+        Console.WriteLine("enter the name");
+        string answerName = Console.ReadLine();
+        option += "-a " + answerName;
+    }
+    option = option.TrimEnd();
+
+    bundle.(option);
 });
 
 var rootCommand = new RootCommand("this opposite many page code to signel code");
